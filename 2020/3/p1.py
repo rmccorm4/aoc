@@ -3,35 +3,39 @@ import math
 import numpy as np
 from collections import namedtuple
 
-infile = "input.txt"
-with open(infile) as f:
-    arr = np.array([list(line.strip()) for line in f])
+def preprocess_input(filename, slope_x, slope_y):
+    with open(filename) as f:
+        arr = np.array([list(line.strip()) for line in f])
 
-class Cartesian:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+    height, width = arr.shape[0], arr.shape[1]
+    num_moves = math.ceil(height / slope_y)
+    necessary_width = num_moves * slope_x
+    num_copies = math.ceil(necessary_width / width)
 
-slope = Cartesian(x=3, y=1)
-height, width = arr.shape[0], arr.shape[1]
-num_moves = math.ceil(height / slope.y)
-necessary_width = num_moves * slope.x
-num_copies = math.ceil(necessary_width / width)
+    print("Slope: ({}, {})".format(slope_x, slope_y))
+    print("\tOriginal Input Shape: {}".format(arr.shape))
+    print("\tNum horizontal copies needed: {}".format(num_copies))
+    arr = np.tile(arr, num_copies)
+    print("\tDuplicated Input Shape: {}".format(arr.shape))
+    return arr
 
-print("Original Input Shape: {}".format(arr.shape))
-print("Num horizontal copies needed: {}".format(num_copies))
-arr = np.tile(arr, num_copies)
-height, width = arr.shape[0], arr.shape[1]
-print("Duplicated Input Shape: {}".format(arr.shape))
+def compute_trees(filename, slope_x, slope_y):
+    arr = preprocess_input(filename, slope_x, slope_y)
+    num_trees = 0
+    height, width = arr.shape[0], arr.shape[1]
+    position_x, position_y = 0, 0 
+    while position_x < width and position_y < height:
+        point = arr[position_y, position_x]
+        if point == "#":
+            num_trees += 1
 
-num_trees = 0
-position = Cartesian(x=0, y=0)
-while position.x < width and position.y < height:
-    point = arr[position.y, position.x]
-    if point == "#":
-        num_trees += 1
+        position_x += slope_x
+        position_y += slope_y
 
-    position.x += slope.x
-    position.y += slope.y
+    return num_trees
 
-print("Number of trees hit: {}".format(num_trees))
+if __name__ == "__main__":
+    infile = "input.txt"
+    slope_x, slope_y = 3, 1
+    num_trees = compute_trees(infile, slope_x, slope_y)
+    print("Number of trees hit: {}".format(num_trees))
